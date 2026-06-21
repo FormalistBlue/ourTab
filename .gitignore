@@ -1,0 +1,41 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output
+dist/
+.output/
+.nuxt/
+.nitro/
+.cache/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# CodeGraph local state
+.codegraph/codegraph.db
+.codegraph/codegraph.db-wal
+.codegraph/codegraph.db-shm
+.codegraph/daemon.log
+.codegraph/daemon.pid
+
+# Logs
+*.log
+npm-debug.log*
+
+# Lock files (uncomment if preferred)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
