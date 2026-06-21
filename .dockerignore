@@ -1,0 +1,8 @@
+.git
+.output
+.nuxt
+node_modules
+docker/data
+data
+coverage
+*.log

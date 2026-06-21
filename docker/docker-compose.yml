@@ -1,0 +1,15 @@
+services:
+  ourtab:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: ourtab
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - DATABASE_PATH=/app/data/ourtab.db
+      - NODE_ENV=production
+      - PORT=3000
+    restart: unless-stopped
