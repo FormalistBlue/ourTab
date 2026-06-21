@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { VueDraggable } from 'vue-draggable-plus'
-import type { Tab } from '~/types/ourtab'
+import { buildReorderItems } from '~/composables/useDragDrop'
 import { useTabsStore } from '~/stores/tabs'
+import type { Tab } from '~/types/ourtab'
 import FolderModal from './FolderModal.vue'
 import FolderTab from './FolderTab.vue'
 import TabItem from './TabItem.vue'
@@ -12,13 +13,7 @@ const activeFolder = ref<Tab | undefined>()
 const folderOpen = ref(false)
 const orderedTabs = computed({
   get: () => tabsStore.currentRootTabs,
-  set: async (value: Tab[]) => {
-    try {
-      await tabsStore.reorderTabs(value.map((tab, index) => ({ id: tab.id, sortOrder: index })))
-    } catch (error) {
-      console.error('Failed to reorder tabs:', error)
-    }
-  },
+  set: async (value: Tab[]) => tabsStore.reorderTabs(buildReorderItems(value.map((tab) => tab.id))),
 })
 
 function openFolder(tab: Tab) {

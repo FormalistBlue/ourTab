@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import ImportExportModal from '~/components/import-export/ImportExportModal.vue'
 import MainContent from '~/components/layout/MainContent.vue'
 import Sidebar from '~/components/layout/Sidebar.vue'
 import SettingsModal from '~/components/settings/SettingsModal.vue'
@@ -13,6 +13,7 @@ const groupsStore = useGroupsStore()
 const tabsStore = useTabsStore()
 const settingsStore = useSettingsStore()
 const settingsOpen = ref(false)
+const importExportOpen = ref(false)
 const { applyTheme } = useTheme()
 const { applyBackground } = useBackground()
 
@@ -26,7 +27,8 @@ onMounted(async () => {
 <template>
   <div class="ourtab-shell flex min-h-screen gap-6 p-4 md:p-6">
     <Sidebar />
-    <MainContent @open-settings="settingsOpen = true" />
+    <MainContent @open-settings="settingsOpen = true" @open-import-export="importExportOpen = true" />
     <SettingsModal v-model:open="settingsOpen" />
+    <ImportExportModal v-model:open="importExportOpen" />
   </div>
 </template>
