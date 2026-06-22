@@ -7,5 +7,5 @@
   "settings": { "title": "设置", "search": "搜索设置", "theme": "主题设置", "language": "语言设置", "background": "背景设置", "searchEngine": "默认搜索引擎", "currentTheme": "当前主题", "currentLanguage": "当前语言", "backgroundType": "背景类型" },
   "importExport": { "title": "导入导出", "export": "导出数据", "import": "导入数据", "exportSuccess": "导出成功", "importSuccess": "导入成功", "importError": "导入失败，请检查文件格式" },
   "contextMenu": { "addTab": "新增标签", "settings": "设置" },
-  "tabEdit": { "title": { "edit": "编辑标签", "add": "新建标签" }, "name": "名称", "namePlaceholder": "请输入标签名称", "url": "网址", "urlPlaceholder": "请输入网址", "nameRequired": "请输入标签名称", "urlRequired": "请输入网址", "iconType": "图标类型", "iconType.auto": "自动抓取", "iconType.text": "文字图标", "iconColor": "图标颜色", "iconBackgroundColor": "图标背景颜色", "fetchingFavicon": "正在抓取favicon...", "faviconFound": "已找到favicon", "faviconNotFound": "未找到favicon，将使用首字母", "cancel": "取消", "save": "保存" }
+  "tabEdit": { "title": { "edit": "编辑标签", "add": "新建标签" }, "name": "名称", "namePlaceholder": "请输入标签名称", "url": "网址", "urlPlaceholder": "请输入网址", "nameRequired": "请输入标签名称", "urlRequired": "请输入网址", "iconType": "图标类型", "iconType": { "auto": "自动抓取", "text": "文字图标" }, "iconColor": "图标颜色", "iconBackgroundColor": "图标背景颜色", "fetchingFavicon": "正在抓取favicon...", "faviconFound": "已找到favicon", "faviconNotFound": "未找到favicon，将使用首字母", "cancel": "取消", "save": "保存" }
 }

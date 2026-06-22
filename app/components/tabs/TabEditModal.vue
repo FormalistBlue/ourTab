@@ -174,12 +174,12 @@ async function save() {
             <div v-if="formData.iconType === 'text'" class="space-y-4">
               <div>
                 <label class="block text-sm font-medium mb-1">{{ $t('tabEdit.iconColor') }}</label>
-                <n-color-picker v-model:value="formData.iconColor" :show-alpha="true" />
+                <n-color-picker v-model:value="formData.iconColor" :show-alpha="true" :z-index="10000" />
               </div>
 
               <div>
                 <label class="block text-sm font-medium mb-1">{{ $t('tabEdit.iconBackgroundColor') }}</label>
-                <n-color-picker v-model:value="formData.iconBackgroundColor" :show-alpha="true" />
+                <n-color-picker v-model:value="formData.iconBackgroundColor" :show-alpha="true" :z-index="10000" />
               </div>
             </div>
           </div>
