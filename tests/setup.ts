@@ -1,4 +1,6 @@
 import { vi } from 'vitest'
+import naive from 'naive-ui'
+import { config } from '@vue/test-utils'
 
 Object.defineProperty(window, 'open', {
   value: vi.fn(),
@@ -18,3 +20,21 @@ Object.defineProperty(window, 'matchMedia', {
   })),
   writable: true,
 })
+
+vi.stubGlobal('useMessage', () => ({
+  success: vi.fn(),
+  error: vi.fn(),
+  warning: vi.fn(),
+  info: vi.fn(),
+}))
+
+vi.stubGlobal('useI18n', () => ({
+  t: (key: string) => key,
+  locale: { value: 'en-US' },
+}))
+
+config.global.plugins = [naive]
+config.global.stubs = {
+  Teleport: { template: '<slot />' },
+  Transition: { template: '<slot />' },
+}
