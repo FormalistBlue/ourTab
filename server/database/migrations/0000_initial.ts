@@ -17,6 +17,8 @@ CREATE TABLE IF NOT EXISTS tabs (
   url TEXT NOT NULL,
   icon TEXT,
   icon_type TEXT NOT NULL DEFAULT 'auto',
+  icon_color TEXT,
+  icon_background_color TEXT,
   is_folder INTEGER NOT NULL DEFAULT 0,
   folder_id TEXT,
   sort_order INTEGER NOT NULL DEFAULT 0,

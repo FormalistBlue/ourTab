@@ -17,6 +17,8 @@ export const tabs = sqliteTable('tabs', {
   url: text('url').notNull(),
   icon: text('icon'),
   iconType: text('icon_type').notNull().default('auto'),
+  iconColor: text('icon_color'),
+  iconBackgroundColor: text('icon_background_color'),
   isFolder: integer('is_folder', { mode: 'boolean' }).notNull().default(false),
   folderId: text('folder_id').references((): any => tabs.id, { onDelete: 'cascade' }),
   sortOrder: integer('sort_order').notNull().default(0),

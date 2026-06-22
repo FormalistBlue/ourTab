@@ -10,12 +10,12 @@ export function getTab(db: OurTabDatabase, id: string) { return db.select().from
 export function createTab(db: OurTabDatabase, input: CreateTabInput) {
   const timestamp = now()
   const scopedTabs = listTabs(db).filter((tab) => tab.groupId === input.groupId && tab.folderId === (input.folderId ?? null))
-  const row = { id: randomUUID(), groupId: input.groupId, name: input.name, url: input.url, icon: input.icon ?? null, iconType: input.iconType, isFolder: input.isFolder, folderId: input.folderId ?? null, sortOrder: input.sortOrder ?? scopedTabs.length, createdAt: timestamp, updatedAt: timestamp }
+  const row = { id: randomUUID(), groupId: input.groupId, name: input.name, url: input.url, icon: input.icon ?? null, iconType: input.iconType, iconColor: input.iconColor ?? null, iconBackgroundColor: input.iconBackgroundColor ?? null, isFolder: input.isFolder, folderId: input.folderId ?? null, sortOrder: input.sortOrder ?? scopedTabs.length, createdAt: timestamp, updatedAt: timestamp }
   db.insert(tabs).values(row).run()
   return row
 }
 export function updateTab(db: OurTabDatabase, id: string, input: UpdateTabInput) {
-  db.update(tabs).set({ groupId: input.groupId, name: input.name, url: input.url, icon: input.icon, iconType: input.iconType, isFolder: input.isFolder, folderId: input.folderId, sortOrder: input.sortOrder, updatedAt: now() }).where(eq(tabs.id, id)).run()
+  db.update(tabs).set({ groupId: input.groupId, name: input.name, url: input.url, icon: input.icon, iconType: input.iconType, iconColor: input.iconColor, iconBackgroundColor: input.iconBackgroundColor, isFolder: input.isFolder, folderId: input.folderId, sortOrder: input.sortOrder, updatedAt: now() }).where(eq(tabs.id, id)).run()
   return getTab(db, id)
 }
 export function deleteTab(db: OurTabDatabase, id: string) { db.delete(tabs).where(eq(tabs.id, id)).run() }

@@ -15,11 +15,11 @@ export interface AppSettings {
 }
 
 export interface Group { id: string; name: string; icon: string | null; sortOrder: number; createdAt: string; updatedAt: string }
-export interface Tab { id: string; groupId: string; name: string; url: string; icon: string | null; iconType: IconType; isFolder: boolean; folderId: string | null; sortOrder: number; createdAt: string; updatedAt: string }
+export interface Tab { id: string; groupId: string; name: string; url: string; icon: string | null; iconType: IconType; iconColor?: string | null; iconBackgroundColor?: string | null; isFolder: boolean; folderId: string | null; sortOrder: number; createdAt: string; updatedAt: string }
 export interface CreateGroupInput { name: string; icon?: string | null; sortOrder?: number }
 export interface UpdateGroupInput { name?: string; icon?: string | null; sortOrder?: number }
-export interface CreateTabInput { groupId: string; name: string; url: string; icon?: string | null; iconType: IconType; isFolder: boolean; folderId?: string | null; sortOrder?: number }
-export interface UpdateTabInput { groupId?: string; name?: string; url?: string; icon?: string | null; iconType?: IconType; isFolder?: boolean; folderId?: string | null; sortOrder?: number }
+export interface CreateTabInput { groupId: string; name: string; url: string; icon?: string | null; iconType: IconType; iconColor?: string | null; iconBackgroundColor?: string | null; isFolder: boolean; folderId?: string | null; sortOrder?: number }
+export interface UpdateTabInput { groupId?: string; name?: string; url?: string; icon?: string | null; iconType?: IconType; iconColor?: string | null; iconBackgroundColor?: string | null; isFolder?: boolean; folderId?: string | null; sortOrder?: number }
 export interface ReorderItem { id: string; sortOrder: number }
 
 export interface ThemeConfig {
