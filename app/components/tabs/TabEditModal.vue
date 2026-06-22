@@ -134,64 +134,60 @@ async function save() {
 </script>
 
 <template>
-  <Teleport to="body">
-    <Transition name="modal">
-      <div v-if="open" class="ourtab-modal-overlay" @click.self="close">
-        <n-card :title="isEditing ? $t('tabEdit.title.edit') : $t('tabEdit.title.add')" closable segmented style="max-width: 32rem; width: 100%" @close="close">
-          <div class="space-y-4">
-            <div>
-              <label class="block text-sm font-medium mb-1">{{ $t('tabEdit.name') }}</label>
-              <n-input v-model:value="formData.name" :placeholder="$t('tabEdit.namePlaceholder')" />
-            </div>
+  <n-modal :show="open" @update:show="close">
+    <n-card :title="isEditing ? $t('tabEdit.title.edit') : $t('tabEdit.title.add')" closable segmented style="max-width: 32rem; width: 100%" @close="close">
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium mb-1">{{ $t('tabEdit.name') }}</label>
+          <n-input v-model:value="formData.name" :placeholder="$t('tabEdit.namePlaceholder')" />
+        </div>
 
-            <div>
-              <label class="block text-sm font-medium mb-1">{{ $t('tabEdit.url') }}</label>
-              <n-input v-model:value="formData.url" :placeholder="$t('tabEdit.urlPlaceholder')" />
-            </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">{{ $t('tabEdit.url') }}</label>
+          <n-input v-model:value="formData.url" :placeholder="$t('tabEdit.urlPlaceholder')" />
+        </div>
 
-            <div>
-              <label class="block text-sm font-medium mb-1">{{ $t('tabEdit.iconType') }}</label>
-              <n-radio-group v-model:value="formData.iconType">
-                <n-radio value="auto">{{ $t('tabEdit.iconType.auto') }}</n-radio>
-                <n-radio value="text">{{ $t('tabEdit.iconType.text') }}</n-radio>
-              </n-radio-group>
-            </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">{{ $t('tabEdit.iconType') }}</label>
+          <n-radio-group v-model:value="formData.iconType">
+            <n-radio value="auto">{{ $t('tabEdit.iconType.auto') }}</n-radio>
+            <n-radio value="text">{{ $t('tabEdit.iconType.text') }}</n-radio>
+          </n-radio-group>
+        </div>
 
-            <!-- 自动抓取模式预览 -->
-            <div v-if="formData.iconType === 'auto'" class="flex items-center gap-3">
-              <div class="flex size-12 items-center justify-center overflow-hidden rounded-2xl bg-white/70">
-                <img v-if="faviconUrl" :src="faviconUrl" class="size-8 object-contain" @error="faviconUrl = null" />
-                <span v-else class="text-lg font-bold text-[var(--color-primary)]">
-                  {{ loadingFavicon ? '...' : formData.name.slice(0, 1) }}
-                </span>
-              </div>
-              <span class="text-sm text-gray-500">
-                {{ loadingFavicon ? $t('tabEdit.fetchingFavicon') : (faviconUrl ? $t('tabEdit.faviconFound') : $t('tabEdit.faviconNotFound')) }}
-              </span>
-            </div>
+        <!-- 自动抓取模式预览 -->
+        <div v-if="formData.iconType === 'auto'" class="flex items-center gap-3">
+          <div class="flex size-12 items-center justify-center overflow-hidden rounded-2xl bg-white/70">
+            <img v-if="faviconUrl" :src="faviconUrl" class="size-8 object-contain" @error="faviconUrl = null" />
+            <span v-else class="text-lg font-bold text-[var(--color-primary)]">
+              {{ loadingFavicon ? '...' : formData.name.slice(0, 1) }}
+            </span>
+          </div>
+          <span class="text-sm text-gray-500">
+            {{ loadingFavicon ? $t('tabEdit.fetchingFavicon') : (faviconUrl ? $t('tabEdit.faviconFound') : $t('tabEdit.faviconNotFound')) }}
+          </span>
+        </div>
 
-            <!-- 图标配置区域 -->
-            <div v-if="formData.iconType === 'text'" class="space-y-4">
-              <div>
-                <label class="block text-sm font-medium mb-1">{{ $t('tabEdit.iconColor') }}</label>
-                <n-color-picker v-model:value="formData.iconColor" :show-alpha="true" :z-index="10000" to="body" />
-              </div>
-
-              <div>
-                <label class="block text-sm font-medium mb-1">{{ $t('tabEdit.iconBackgroundColor') }}</label>
-                <n-color-picker v-model:value="formData.iconBackgroundColor" :show-alpha="true" :z-index="10000" to="body" />
-              </div>
-            </div>
+        <!-- 图标配置区域 -->
+        <div v-if="formData.iconType === 'text'" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium mb-1">{{ $t('tabEdit.iconColor') }}</label>
+            <n-color-picker v-model:value="formData.iconColor" :show-alpha="true" />
           </div>
 
-          <template #footer>
-            <div class="flex justify-end gap-3">
-              <n-button @click="close">{{ $t('tabEdit.cancel') }}</n-button>
-              <n-button type="primary" @click="save">{{ $t('tabEdit.save') }}</n-button>
-            </div>
-          </template>
-        </n-card>
+          <div>
+            <label class="block text-sm font-medium mb-1">{{ $t('tabEdit.iconBackgroundColor') }}</label>
+            <n-color-picker v-model:value="formData.iconBackgroundColor" :show-alpha="true" />
+          </div>
+        </div>
       </div>
-    </Transition>
-  </Teleport>
+
+      <template #footer>
+        <div class="flex justify-end gap-3">
+          <n-button @click="close">{{ $t('tabEdit.cancel') }}</n-button>
+          <n-button type="primary" @click="save">{{ $t('tabEdit.save') }}</n-button>
+        </div>
+      </template>
+    </n-card>
+  </n-modal>
 </template>
