@@ -3,6 +3,9 @@ import { ref, computed, watch } from 'vue'
 import type { Tab, CreateTabInput, UpdateTabInput, IconType } from '~/types/ourtab'
 import { useTabsStore } from '~/stores/tabs'
 
+const message = useMessage()
+const { t } = useI18n()
+
 const props = defineProps<{
   tab?: Tab
   groupId: string
@@ -11,7 +14,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   'update:open': [value: boolean]
-  'save': [tab: Tab]
+  'save': []
 }>()
 
 const tabsStore = useTabsStore()
@@ -101,7 +104,12 @@ watch(() => formData.value.iconType, (newType) => {
 })
 
 async function save() {
-  if (!formData.value.name || !formData.value.url) {
+  if (!formData.value.name) {
+    message.error(t('tabEdit.nameRequired'))
+    return
+  }
+  if (!formData.value.url) {
+    message.error(t('tabEdit.urlRequired'))
     return
   }
 
@@ -120,7 +128,7 @@ async function save() {
     await tabsStore.createTab({ ...tabData, groupId: props.groupId, isFolder: false } as CreateTabInput)
   }
 
-  emit('save', tabData as Tab)
+  emit('save')
   close()
 }
 </script>
