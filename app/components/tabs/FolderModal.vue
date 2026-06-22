@@ -13,16 +13,12 @@ function close() { open.value = false }
 </script>
 
 <template>
-  <Teleport to="body">
-    <Transition name="modal">
-      <div v-if="open && folder" class="ourtab-modal-overlay" @click.self="close">
-        <n-card :title="folder.name" closable segmented style="max-width: 42rem; width: 100%" @close="close">
-          <div v-if="children.length" class="grid grid-cols-3 gap-4 sm:grid-cols-5">
-            <TabItem v-for="tab in children" :key="tab.id" :tab="tab" />
-          </div>
-          <p v-else class="rounded-2xl border border-dashed border-slate-300 p-8 text-center text-sm text-slate-500">{{ $t('folder.empty') }}</p>
-        </n-card>
+  <n-modal :show="open && !!folder" @update:show="close">
+    <n-card v-if="folder" :title="folder.name" closable segmented style="max-width: 42rem; width: 100%" @close="close">
+      <div v-if="children.length" class="grid grid-cols-3 gap-4 sm:grid-cols-5">
+        <TabItem v-for="tab in children" :key="tab.id" :tab="tab" />
       </div>
-    </Transition>
-  </Teleport>
+      <p v-else class="rounded-2xl border border-dashed border-slate-300 p-8 text-center text-sm text-slate-500">{{ $t('folder.empty') }}</p>
+    </n-card>
+  </n-modal>
 </template>

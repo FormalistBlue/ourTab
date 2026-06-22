@@ -41,7 +41,8 @@ tests/                # 测试文件
 - 使用 `<script setup lang="ts">` + Composition API
 - 组件职责单一，超过 3 个独立 UI 区域时拆分
 - Props 用 `defineProps`，Events 用 `defineEmits`
-- 弹框使用 `<Teleport to="body">` + CSS 模态框，不用 Naive UI 的 Dialog（Nuxt SSR portal 有问题）
+- 弹框使用 `<n-modal>` + `<n-card>` 实现，不要使用自定义的 Teleport + CSS 模态框
+- `n-modal` 会自动处理 z-index 和弹框层级，避免颜色选择器等组件被遮挡
 
 ### 状态管理
 - 使用 Pinia setup store（`defineStore('name', () => {...})`）
@@ -99,6 +100,5 @@ pnpm build && sudo systemctl restart ourtab
 
 ## 已知问题
 
-- Naive UI 的弹框组件在 Nuxt SSR 下可用（`nuxtjs-naive-ui` 模块处理样式收集），弹框仍使用 `<Teleport to="body">` + `<n-card>` 实现
 - vue3-context-menu 需导入 CSS: `@imengyu/vue3-context-menu/lib/vue3-context-menu.css`
 - 编辑标签功能尚未实现（右键菜单"编辑"只输出日志）
