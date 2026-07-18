@@ -20,3 +20,9 @@ created.
 
 Run `./deploy/backup.sh` daily. It uses SQLite's online backup API and keeps
 the most recent 14 days of local backups.
+
+Install the included root cron entry once:
+
+```bash
+sudo install -m 644 deploy/ourtab.cron /etc/cron.d/ourtab
+```
