@@ -109,6 +109,8 @@
   .link-tile__actions { position: absolute; top: 6px; right: 6px; display: flex; gap: 1px; opacity: 0; transform: translateY(-3px); transition: opacity .18s ease, transform .18s ease; }
   .link-tile:hover .link-tile__actions, .link-tile:focus-within .link-tile__actions { opacity: 1; transform: translateY(0); }
   .link-icon { display: grid; place-items: center; width: var(--icon-size); height: var(--icon-size); overflow: hidden; border: 1px solid color-mix(in oklab, var(--icon-color) 48%, transparent); border-radius: 20px; color: color-mix(in oklab, var(--icon-color) 88%, white); background: radial-gradient(circle at 30% 20%, color-mix(in oklab, var(--icon-color) 44%, white), transparent 65%), color-mix(in oklab, var(--icon-color) 24%, var(--mist-900)); box-shadow: inset 0 1px 0 oklch(100% 0 0 / .18), 0 8px 22px color-mix(in oklab, var(--icon-color) 12%, transparent); font-family: var(--font-display); font-size: calc(var(--icon-size) * .28); font-weight: 500; transition: transform .28s var(--ease-silk); }
+  .link-tile__drag { cursor: grab; }
+  .link-tile__drag:active { cursor: grabbing; }
   .link-tile:hover .link-icon { transform: scale(1.06); }
   .link-icon img { width: 52%; height: 52%; object-fit: contain; }
   .link-icon--small { width: 31px; height: 31px; border-radius: 10px; }
