@@ -3,6 +3,7 @@ import { Check, Image as ImageIcon, LoaderCircle, RefreshCw, Type, Upload, X } f
 import type { LinkItem, LinkMetadata } from '#shared/contracts'
 import { uploadLinkIcon } from '../composables/uploadLinkIcon'
 import { useDashboardStore } from '../stores/dashboard'
+import { versionedUploadUrl } from '../utils/assets'
 
 const emit = defineEmits<{ saved: []; closed: [] }>()
 const store = useDashboardStore()
@@ -20,7 +21,7 @@ const iconColorTouched = ref(false)
 let metadataRequestId = 0
 
 const initial = computed(() => editing.value?.title.trim().slice(0, 1).toUpperCase() || '?')
-const previewPath = computed(() => previewUrl.value || iconPath.value)
+const previewPath = computed(() => previewUrl.value || versionedUploadUrl(iconPath.value, editing.value?.updatedAt || 'new'))
 
 function revokePreview() {
   if (previewUrl.value) URL.revokeObjectURL(previewUrl.value)

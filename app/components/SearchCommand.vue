@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ArrowUpRight, Search } from '@lucide/vue'
 import type { AppPreferences, LinkItem, Workspace } from '#shared/contracts'
+import { versionedUploadUrl } from '../utils/assets'
 
 const props = defineProps<{ workspaces: Workspace[]; preferences: AppPreferences }>()
 const query = ref('')
@@ -8,6 +9,10 @@ const activeIndex = ref(0)
 const input = ref<HTMLInputElement | null>(null)
 function hostname(url: string) {
   try { return new URL(url).hostname } catch { return url }
+}
+
+function iconUrl(link: LinkItem) {
+  return versionedUploadUrl(link.iconPath, link.updatedAt)
 }
 
 const matches = computed(() => {
@@ -88,7 +93,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', globalShortcut))
         @click="openLink(link)"
       >
         <span class="search-command__result-icon" :style="{ '--icon-color': link.iconColor }">
-          <img v-if="link.iconPath" :src="link.iconPath" alt="">
+          <img v-if="iconUrl(link)" :src="iconUrl(link) || undefined" alt="">
           <span v-else>{{ link.title.slice(0, 1).toUpperCase() }}</span>
         </span>
         <span><strong>{{ link.title }}</strong><small>{{ hostname(link.url) }}</small></span>

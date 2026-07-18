@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { MoreHorizontal } from '@lucide/vue'
 import type { LinkItem } from '#shared/contracts'
+import { versionedUploadUrl } from '../utils/assets'
 
 const props = defineProps<{ link: LinkItem; iconSize: number }>()
 const emit = defineEmits<{ menu: [request: { link: LinkItem; x: number; y: number }] }>()
 const initial = computed(() => props.link.title.trim().slice(0, 1).toUpperCase())
+const iconUrl = computed(() => versionedUploadUrl(props.link.iconPath, props.link.updatedAt))
 
 function open(event?: MouseEvent, forceNewTab = false) {
   if (event && (event.target as HTMLElement).closest('button')) return
@@ -59,7 +61,7 @@ function onKeydown(event: KeyboardEvent) {
       title="拖动排序"
       :style="{ '--icon-size': `${iconSize}px`, '--icon-color': link.iconColor }"
     >
-      <img v-if="link.iconPath" :src="link.iconPath" alt="" loading="lazy">
+      <img v-if="iconUrl" :src="iconUrl" alt="" loading="lazy">
       <span v-else>{{ initial }}</span>
     </div>
     <span class="link-tile__label" :title="link.title">{{ link.title }}</span>

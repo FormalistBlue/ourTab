@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Wallpaper } from '#shared/contracts'
+import { versionedUploadUrl } from '../utils/assets'
 
 const props = defineProps<{
   wallpaper?: Wallpaper | null
@@ -12,9 +13,11 @@ let worker: Worker | null = null
 let observer: ResizeObserver | null = null
 let motionPreference: MediaQueryList | null = null
 
-const backgroundStyle = computed(() => props.wallpaper?.imagePath
-  ? { backgroundImage: `url("${props.wallpaper.imagePath}")` }
-  : undefined)
+const backgroundStyle = computed(() => {
+  const wallpaper = props.wallpaper
+  const imagePath = wallpaper ? versionedUploadUrl(wallpaper.imagePath, wallpaper.createdAt) : null
+  return imagePath ? { backgroundImage: `url("${imagePath}")` } : undefined
+})
 
 function sendSize() {
   worker?.postMessage({

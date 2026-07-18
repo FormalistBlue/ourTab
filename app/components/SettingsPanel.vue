@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { LogOut, Plus, Settings2, Trash2, Upload, X } from '@lucide/vue'
-import type { AppPreferences, LinkGroup, Workspace } from '#shared/contracts'
+import type { AppPreferences, LinkGroup, Wallpaper, Workspace } from '#shared/contracts'
 import { useDashboardStore } from '../stores/dashboard'
 import type { ConfirmDialogApi, PromptDialogApi } from '../types/ui'
+import { versionedUploadUrl } from '../utils/assets'
 
-const props = defineProps<{ activeWorkspace: Workspace | null; preferences: AppPreferences; wallpapers: { id: string; name: string; kind: string; imagePath: string | null; thumbnailPath: string | null }[] }>()
+const props = defineProps<{ activeWorkspace: Workspace | null; preferences: AppPreferences; wallpapers: Wallpaper[] }>()
 const emit = defineEmits<{ close: []; addLink: [groupId: string] }>()
 const store = useDashboardStore()
 const { user, logout } = useAuth()
@@ -155,7 +156,7 @@ defineExpose({ open, close })
           <div class="settings-section__heading"><div><span class="settings-section__kicker">WALLPAPER</span><h3>壁纸</h3></div><button class="quiet-button" type="button" :disabled="uploading" @click="fileInput?.click()"><Upload :size="15" />上传</button><input ref="fileInput" class="visually-hidden" type="file" accept="image/jpeg,image/png,image/webp,image/avif" @change="uploadWallpaper"></div>
           <div class="wallpaper-grid">
             <button v-for="wallpaper in wallpapers" :key="wallpaper.id" class="wallpaper-card" :class="{ active: preferences.globalWallpaperId === wallpaper.id }" type="button" @click="updatePreference({ globalWallpaperId: wallpaper.id })">
-              <span v-if="wallpaper.thumbnailPath" class="wallpaper-card__image" :style="{ backgroundImage: `url(${wallpaper.thumbnailPath})` }" /><span v-else class="wallpaper-card__image wallpaper-card__image--mist" :class="{ 'wallpaper-card__image--shader': wallpaper.kind === 'shader' }" /><strong>{{ wallpaper.name }}</strong>
+              <span v-if="wallpaper.thumbnailPath" class="wallpaper-card__image" :style="{ backgroundImage: `url(${versionedUploadUrl(wallpaper.thumbnailPath, wallpaper.createdAt)})` }" /><span v-else class="wallpaper-card__image wallpaper-card__image--mist" :class="{ 'wallpaper-card__image--shader': wallpaper.kind === 'shader' }" /><strong>{{ wallpaper.name }}</strong>
             </button>
           </div>
         </section>

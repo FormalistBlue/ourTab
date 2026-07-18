@@ -4,6 +4,7 @@ import type { LinkGroup, LinkItem, LinkMetadata, OpenMode } from '#shared/contra
 import { uploadLinkIcon } from '../composables/uploadLinkIcon'
 import { useDashboardStore } from '../stores/dashboard'
 import type { ConfirmDialogApi } from '../types/ui'
+import { versionedUploadUrl } from '../utils/assets'
 
 const props = defineProps<{ groups: LinkGroup[]; defaultOpenMode: OpenMode }>()
 const emit = defineEmits<{ saved: []; closed: [] }>()
@@ -28,7 +29,7 @@ let metadataRequestId = 0
 
 const currentGroup = computed(() => props.groups.find(group => group.id === groupId.value))
 const initial = computed(() => title.value.trim().slice(0, 1).toUpperCase() || '?')
-const iconPreviewPath = computed(() => iconPreviewUrl.value || iconPath.value)
+const iconPreviewPath = computed(() => iconPreviewUrl.value || versionedUploadUrl(iconPath.value, editing.value?.updatedAt || 'new'))
 
 function revokeIconPreview() {
   if (iconPreviewUrl.value) URL.revokeObjectURL(iconPreviewUrl.value)
