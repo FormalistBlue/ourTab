@@ -29,6 +29,17 @@ export const useDashboardStore = defineStore('dashboard', () => {
     if (savedWorkspace) activeWorkspaceId.value = savedWorkspace
   }
 
+  async function reset() {
+    snapshot.value = null
+    loading.value = false
+    syncing.value = false
+    error.value = ''
+    activeWorkspaceId.value = ''
+    if (!import.meta.client) return
+    await del(CACHE_KEY)
+    localStorage.removeItem('ourtab:active-workspace')
+  }
+
   async function refresh(options: { quiet?: boolean } = {}) {
     if (syncing.value) return
     syncing.value = true
@@ -40,7 +51,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
       if (snapshot.value) headers.set('if-none-match', `"${snapshot.value.revision}"`)
       const response = await fetch('/api/dashboard', { credentials: 'same-origin', headers })
       if (response.status === 401) {
-        await del(CACHE_KEY)
+        await reset()
         await navigateTo('/login')
         return
       }
@@ -88,6 +99,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
     activeWorkspace,
     activeWorkspaceId,
     hydrate,
+    reset,
     refresh,
     mutate,
     selectWorkspace,

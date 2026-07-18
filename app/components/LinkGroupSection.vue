@@ -6,7 +6,7 @@ import type { LinkGroup, LinkItem } from '#shared/contracts'
 const props = defineProps<{ group: LinkGroup; iconSize: number }>()
 const emit = defineEmits<{
   add: [groupId: string]
-  edit: [link: LinkItem]
+  menu: [request: { link: LinkItem; x: number; y: number }]
   order: [groupId: string, ids: string[]]
   move: [linkId: string, groupId: string, index: number]
 }>()
@@ -55,7 +55,7 @@ function onAdd(event: { item: HTMLElement; newIndex?: number }) {
         :key="link.id"
         :link="link"
         :icon-size="iconSize"
-        @edit="emit('edit', $event)"
+        @menu="emit('menu', $event)"
       />
       <button v-if="!localLinks.length" class="empty-link-tile" type="button" @click="emit('add', group.id)">
         <Plus :size="21" />

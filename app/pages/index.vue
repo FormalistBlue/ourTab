@@ -1,14 +1,24 @@
 <script setup lang="ts">
 import { LoaderCircle, Plus, Settings, Sparkles } from '@lucide/vue'
 import { VueDraggable } from 'vue-draggable-plus'
-import type { LinkGroup, LinkItem } from '#shared/contracts'
+import type { LinkGroup, LinkItem, Workspace } from '#shared/contracts'
 import { useDashboardStore } from '../stores/dashboard'
+import type { ConfirmDialogApi, ContextMenuItem, PromptDialogApi } from '../types/ui'
+
+type MenuTarget =
+  | { kind: 'link'; link: LinkItem }
+  | { kind: 'background' }
+  | { kind: 'workspace'; workspace: Workspace }
 
 const store = useDashboardStore()
 const editor = ref<{ open: (group: LinkGroup, link?: LinkItem) => void } | null>(null)
-const settings = ref<{ open: () => void; close: () => void } | null>(null)
+const iconEditor = ref<{ open: (link: LinkItem) => void } | null>(null)
+const settings = ref<{ open: (section?: 'wallpaper') => void; close: () => void } | null>(null)
+const promptDialog = ref<PromptDialogApi | null>(null)
+const confirmDialog = ref<ConfirmDialogApi | null>(null)
 const localGroups = ref<LinkGroup[]>([])
 const now = ref(new Date())
+const contextMenu = reactive<{ open: boolean; x: number; y: number; target: MenuTarget | null }>({ open: false, x: 0, y: 0, target: null })
 let clockTimer: ReturnType<typeof setInterval> | undefined
 
 const activeWorkspace = computed(() => store.activeWorkspace)
@@ -19,6 +29,27 @@ const activeWallpaper = computed(() => {
 })
 const dateLabel = computed(() => new Intl.DateTimeFormat('zh-CN', { weekday: 'long', month: 'long', day: 'numeric' }).format(now.value))
 const timeLabel = computed(() => new Intl.DateTimeFormat('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false }).format(now.value))
+const contextMenuItems = computed<ContextMenuItem[]>(() => {
+  if (contextMenu.target?.kind === 'link') {
+    return [
+      { id: 'open-new-tab', label: '在新标签页打开', icon: 'external' },
+      { id: 'edit-link', label: '编辑标签', icon: 'edit' },
+      { id: 'edit-icon', label: '编辑图标', icon: 'image' },
+      { id: 'delete-link', label: '删除标签', icon: 'trash', danger: true, separatorBefore: true }
+    ]
+  }
+  if (contextMenu.target?.kind === 'workspace') {
+    return [
+      { id: 'edit-workspace', label: '编辑工作区', icon: 'edit' },
+      { id: 'delete-workspace', label: '删除工作区', icon: 'trash', danger: true, separatorBefore: true, disabled: store.workspaces.length <= 1 }
+    ]
+  }
+  return [
+    { id: 'open-settings', label: '设置', icon: 'settings' },
+    { id: 'add-link', label: '添加图标', icon: 'plus' },
+    { id: 'edit-background', label: '编辑背景', icon: 'image' }
+  ]
+})
 
 watch(activeWorkspace, workspace => { localGroups.value = workspace ? [...workspace.groups] : [] }, { immediate: true, deep: true })
 
@@ -45,7 +76,7 @@ function selectWorkspace(id: string) {
 }
 
 async function addWorkspace() {
-  const name = window.prompt('工作区名称')?.trim()
+  const name = await promptDialog.value?.open({ title: '创建工作区', label: '工作区名称', placeholder: '例如：工作', confirmLabel: '创建工作区' })
   if (name) await store.mutate('/api/workspaces', { method: 'POST', body: { name } })
 }
 
@@ -78,6 +109,83 @@ function openSettings() {
   settings.value?.open()
 }
 
+function showContextMenu(target: MenuTarget, x: number, y: number) {
+  contextMenu.target = target
+  contextMenu.x = x
+  contextMenu.y = y
+  contextMenu.open = true
+}
+
+function closeContextMenu() {
+  contextMenu.open = false
+  contextMenu.target = null
+}
+
+function showLinkMenu(request: { link: LinkItem; x: number; y: number }) {
+  showContextMenu({ kind: 'link', link: request.link }, request.x, request.y)
+}
+
+function showWorkspaceMenu(request: { workspace: Workspace; x: number; y: number }) {
+  showContextMenu({ kind: 'workspace', workspace: request.workspace }, request.x, request.y)
+}
+
+function showBackgroundMenu(event: MouseEvent) {
+  const target = event.target as HTMLElement
+  if (target.closest('input, textarea, select, [contenteditable="true"], dialog, button, a, .link-tile, .workspace-dock')) return
+  event.preventDefault()
+  showContextMenu({ kind: 'background' }, event.clientX, event.clientY)
+}
+
+async function renameWorkspace(workspace: Workspace) {
+  const name = await promptDialog.value?.open({ title: '重命名工作区', label: '工作区名称', value: workspace.name, confirmLabel: '保存名称' })
+  if (name && name !== workspace.name) await store.mutate(`/api/workspaces/${workspace.id}`, { method: 'PATCH', body: { name } })
+}
+
+async function removeWorkspace(workspace: Workspace) {
+  const links = workspace.groups.reduce((total, group) => total + group.links.length, 0)
+  const confirmed = await confirmDialog.value?.open({
+    title: '删除工作区',
+    message: `“${workspace.name}”中的 ${workspace.groups.length} 个分组和 ${links} 个标签都会被删除。`,
+    confirmLabel: '删除工作区',
+    danger: true
+  })
+  if (confirmed) await store.mutate(`/api/workspaces/${workspace.id}`, { method: 'DELETE' })
+}
+
+async function removeLink(link: LinkItem) {
+  const confirmed = await confirmDialog.value?.open({
+    title: '删除标签',
+    message: `确定删除“${link.title}”吗？这个操作不能撤销。`,
+    confirmLabel: '删除标签',
+    danger: true
+  })
+  if (confirmed) await store.mutate(`/api/links/${link.id}`, { method: 'DELETE' })
+}
+
+function handleContextAction(id: string) {
+  const target = contextMenu.target
+  closeContextMenu()
+  if (!target) return
+
+  if (target.kind === 'link') {
+    if (id === 'open-new-tab') window.open(target.link.url, '_blank', 'noopener')
+    if (id === 'edit-link') openEditor(target.link.groupId, target.link)
+    if (id === 'edit-icon') iconEditor.value?.open(target.link)
+    if (id === 'delete-link') void removeLink(target.link)
+    return
+  }
+
+  if (target.kind === 'workspace') {
+    if (id === 'edit-workspace') void renameWorkspace(target.workspace)
+    if (id === 'delete-workspace') void removeWorkspace(target.workspace)
+    return
+  }
+
+  if (id === 'open-settings') settings.value?.open()
+  if (id === 'add-link') openFirstAdd()
+  if (id === 'edit-background') settings.value?.open('wallpaper')
+}
+
 function openFirstAdd() {
   const group = activeWorkspace.value?.groups[0]
   if (group) openEditor(group.id)
@@ -90,7 +198,7 @@ function onSettingsAdd(groupId: string) {
 </script>
 
 <template>
-  <main class="app-shell">
+  <main class="app-shell" @contextmenu="showBackgroundMenu">
     <AppBackground
       :wallpaper="activeWallpaper"
       :shader-enabled="Boolean(store.snapshot?.preferences.shaderEnabled)"
@@ -115,20 +223,24 @@ function onSettingsAdd(groupId: string) {
       <section v-if="store.loading && !store.snapshot" class="loading-state"><LoaderCircle class="spin" :size="24" /><span>正在整理你的桌面…</span></section>
       <section v-else-if="activeWorkspace" class="workspace-content" aria-live="polite">
         <VueDraggable v-model="localGroups" class="group-stack" item-key="id" handle=".link-group__marker" :animation="240" ghost-class="link-group--ghost" @end="orderGroups(localGroups.map(group => group.id))">
-          <LinkGroupSection v-for="group in localGroups" :key="group.id" :group="group" :icon-size="store.snapshot?.preferences.iconSize || 64" @add="openEditor" @edit="openEditor($event.groupId, $event)" @order="orderLinks" @move="moveLink" />
+          <LinkGroupSection v-for="group in localGroups" :key="group.id" :group="group" :icon-size="store.snapshot?.preferences.iconSize || 64" @add="openEditor" @menu="showLinkMenu" @order="orderLinks" @move="moveLink" />
         </VueDraggable>
         <button v-if="!localGroups.length" class="first-group-card" type="button" @click="openFirstAdd"><Plus :size="22" /><span>添加第一个网址</span><small>让你的常用入口从这里开始</small></button>
       </section>
       <section v-else class="empty-state"><div class="empty-state__orb" /><h1>还没有桌面</h1><p>创建一个工作区，开始收集你的入口。</p><button class="primary-button" type="button" @click="addWorkspace"><Plus :size="17" />创建工作区</button></section>
 
       <footer class="app-footer">
-        <WorkspaceDock :workspaces="store.workspaces" :active-id="store.activeWorkspaceId" @select="selectWorkspace" @add="addWorkspace" @order="orderWorkspaces" />
+        <WorkspaceDock :workspaces="store.workspaces" :active-id="store.activeWorkspaceId" @select="selectWorkspace" @add="addWorkspace" @order="orderWorkspaces" @menu="showWorkspaceMenu" />
         <div class="app-footer__tip"><kbd>/</kbd> 搜索 <span>·</span> <kbd>⌘ K</kbd> 快速聚焦</div>
       </footer>
     </div>
 
     <div v-if="store.error" class="toast toast--error" role="status">{{ store.error }}<button type="button" aria-label="关闭提示" @click="store.error = ''">×</button></div>
-    <LinkEditorDialog ref="editor" :groups="activeWorkspace?.groups || []" @saved="store.refresh({ quiet: true })" />
+    <LinkEditorDialog ref="editor" :groups="activeWorkspace?.groups || []" :default-open-mode="store.snapshot?.preferences.defaultOpenMode || 'current'" @saved="store.refresh({ quiet: true })" />
+    <IconEditorDialog ref="iconEditor" @saved="store.refresh({ quiet: true })" />
     <SettingsPanel ref="settings" :active-workspace="activeWorkspace" :preferences="store.snapshot?.preferences || { searchEngine: 'google', defaultOpenMode: 'current', globalWallpaperId: null, shaderEnabled: false, shaderIntensity: .55, iconSize: 64 }" :wallpapers="store.snapshot?.wallpapers || []" @add-link="onSettingsAdd" />
+    <AppContextMenu :open="contextMenu.open" :x="contextMenu.x" :y="contextMenu.y" :items="contextMenuItems" @close="closeContextMenu" @select="handleContextAction" />
+    <AppPromptDialog ref="promptDialog" />
+    <AppConfirmDialog ref="confirmDialog" />
   </main>
 </template>

@@ -2,11 +2,16 @@
 import { LogOut, Plus, Settings2, Trash2, Upload, X } from '@lucide/vue'
 import type { AppPreferences, LinkGroup, Workspace } from '#shared/contracts'
 import { useDashboardStore } from '../stores/dashboard'
+import type { ConfirmDialogApi, PromptDialogApi } from '../types/ui'
 
 const props = defineProps<{ activeWorkspace: Workspace | null; preferences: AppPreferences; wallpapers: { id: string; name: string; kind: string; imagePath: string | null; thumbnailPath: string | null }[] }>()
 const emit = defineEmits<{ close: []; addLink: [groupId: string] }>()
 const store = useDashboardStore()
+const { user, logout } = useAuth()
 const dialog = ref<HTMLDialogElement | null>(null)
+const promptDialog = ref<PromptDialogApi | null>(null)
+const confirmDialog = ref<ConfirmDialogApi | null>(null)
+const wallpaperSection = ref<HTMLElement | null>(null)
 const newWorkspaceName = ref('')
 const newGroupName = ref('')
 const uploading = ref(false)
@@ -16,8 +21,9 @@ const newPassword = ref('')
 const passwordMessage = ref('')
 const fileInput = ref<HTMLInputElement | null>(null)
 
-function open() {
-  dialog.value?.showModal()
+function open(section?: 'wallpaper') {
+  if (!dialog.value?.open) dialog.value?.showModal()
+  if (section === 'wallpaper') nextTick(() => wallpaperSection.value?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
 }
 
 function close() {
@@ -36,12 +42,19 @@ async function createWorkspace() {
 }
 
 async function renameWorkspace(workspace: Workspace) {
-  const name = window.prompt('工作区名称', workspace.name)?.trim()
+  const name = await promptDialog.value?.open({ title: '重命名工作区', label: '工作区名称', value: workspace.name, confirmLabel: '保存名称' })
   if (name && name !== workspace.name) await store.mutate(`/api/workspaces/${workspace.id}`, { method: 'PATCH', body: { name } })
 }
 
 async function removeWorkspace(workspace: Workspace) {
-  if (!window.confirm(`删除工作区“${workspace.name}”及其中的标签？`)) return
+  const linkCount = workspace.groups.reduce((total, group) => total + group.links.length, 0)
+  const confirmed = await confirmDialog.value?.open({
+    title: '删除工作区',
+    message: `“${workspace.name}”中的 ${workspace.groups.length} 个分组和 ${linkCount} 个标签都会被删除。`,
+    confirmLabel: '删除工作区',
+    danger: true
+  })
+  if (!confirmed) return
   await store.mutate(`/api/workspaces/${workspace.id}`, { method: 'DELETE' })
 }
 
@@ -52,12 +65,18 @@ async function createGroup() {
 }
 
 async function renameGroup(group: LinkGroup) {
-  const name = window.prompt('分组名称', group.name)?.trim()
+  const name = await promptDialog.value?.open({ title: '重命名分组', label: '分组名称', value: group.name, confirmLabel: '保存名称' })
   if (name && name !== group.name) await store.mutate(`/api/groups/${group.id}`, { method: 'PATCH', body: { name } })
 }
 
 async function removeGroup(group: LinkGroup) {
-  if (group.links.length && !window.confirm(`删除分组“${group.name}”及其中 ${group.links.length} 个标签？`)) return
+  const confirmed = await confirmDialog.value?.open({
+    title: '删除分组',
+    message: group.links.length ? `“${group.name}”及其中 ${group.links.length} 个标签都会被删除。` : `确定删除空分组“${group.name}”吗？`,
+    confirmLabel: '删除分组',
+    danger: true
+  })
+  if (!confirmed) return
   await store.mutate(`/api/groups/${group.id}`, { method: 'DELETE' })
 }
 
@@ -81,9 +100,12 @@ async function changePassword() {
   passwordMessage.value = ''
   try {
     await $fetch('/api/auth/password', { method: 'PATCH', body: { currentPassword: currentPassword.value, newPassword: newPassword.value } })
-    passwordMessage.value = '密码已更新，请重新登录。'
     currentPassword.value = ''
     newPassword.value = ''
+    await store.reset()
+    user.value = null
+    close()
+    await navigateTo('/login')
   } catch (cause) {
     const candidate = cause as { data?: { statusMessage?: string } }
     passwordMessage.value = candidate.data?.statusMessage || '密码更新失败'
@@ -123,12 +145,13 @@ defineExpose({ open, close })
         <section class="settings-section">
           <div class="settings-section__heading"><div><span class="settings-section__kicker">APPEARANCE</span><h3>视觉</h3></div></div>
           <label class="setting-control"><span>默认搜索引擎</span><select :value="preferences.searchEngine" @change="updatePreference({ searchEngine: ($event.target as HTMLSelectElement).value as AppPreferences['searchEngine'] })"><option value="google">Google</option><option value="bing">Bing</option><option value="baidu">百度</option></select></label>
+          <label class="setting-control"><span>标签默认打开方式</span><select :value="preferences.defaultOpenMode" @change="updatePreference({ defaultOpenMode: ($event.target as HTMLSelectElement).value as AppPreferences['defaultOpenMode'] })"><option value="current">当前标签页</option><option value="new-tab">新标签页</option></select></label>
           <label class="setting-control"><span>标签尺寸 <small>{{ preferences.iconSize }}px</small></span><input type="range" min="48" max="88" step="4" :value="preferences.iconSize" @change="updatePreference({ iconSize: Number(($event.target as HTMLInputElement).value) })"></label>
           <label class="setting-toggle"><span><strong>雾光流域</strong><small>启用 WebGL2 动态氛围</small></span><input type="checkbox" :checked="preferences.shaderEnabled" @change="updatePreference({ shaderEnabled: ($event.target as HTMLInputElement).checked })"><i /></label>
           <label v-if="preferences.shaderEnabled" class="setting-control"><span>动态强度 <small>{{ Math.round(preferences.shaderIntensity * 100) }}%</small></span><input type="range" min="0" max="1" step="0.05" :value="preferences.shaderIntensity" @change="updatePreference({ shaderIntensity: Number(($event.target as HTMLInputElement).value) })"></label>
         </section>
 
-        <section class="settings-section">
+        <section ref="wallpaperSection" class="settings-section">
           <div class="settings-section__heading"><div><span class="settings-section__kicker">WALLPAPER</span><h3>壁纸</h3></div><button class="quiet-button" type="button" :disabled="uploading" @click="fileInput?.click()"><Upload :size="15" />上传</button><input ref="fileInput" class="visually-hidden" type="file" accept="image/jpeg,image/png,image/webp,image/avif" @change="uploadWallpaper"></div>
           <div class="wallpaper-grid">
             <button v-for="wallpaper in wallpapers" :key="wallpaper.id" class="wallpaper-card" :class="{ active: preferences.globalWallpaperId === wallpaper.id }" type="button" @click="updatePreference({ globalWallpaperId: wallpaper.id })">
@@ -143,7 +166,9 @@ defineExpose({ open, close })
         </section>
       </div>
 
-      <footer class="settings-panel__footer"><button class="logout-button" type="button" @click="useAuth().logout()"><LogOut :size="16" />退出登录</button><span>ourTab · v1</span></footer>
+      <footer class="settings-panel__footer"><button class="logout-button" type="button" @click="logout"><LogOut :size="16" />退出登录</button><span>ourTab · v1.1</span></footer>
     </aside>
   </dialog>
+  <AppPromptDialog ref="promptDialog" />
+  <AppConfirmDialog ref="confirmDialog" />
 </template>

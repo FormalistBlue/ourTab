@@ -1,4 +1,5 @@
 import type { SessionUser } from '#shared/contracts'
+import { useDashboardStore } from '../stores/dashboard'
 
 export function useAuth() {
   const user = useState<SessionUser | null | undefined>('auth-user', () => undefined)
@@ -23,6 +24,7 @@ export function useAuth() {
 
   async function logout() {
     await $fetch('/api/auth/logout', { method: 'POST' })
+    await useDashboardStore().reset()
     user.value = null
     await navigateTo('/login')
   }

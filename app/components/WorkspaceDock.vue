@@ -8,9 +8,28 @@ const emit = defineEmits<{
   select: [id: string]
   add: []
   order: [ids: string[]]
+  menu: [request: { workspace: Workspace; x: number; y: number }]
 }>()
 const localWorkspaces = ref<Workspace[]>([])
 watch(() => props.workspaces, value => { localWorkspaces.value = [...value] }, { immediate: true, deep: true })
+
+function showMenu(event: MouseEvent, workspace: Workspace) {
+  event.preventDefault()
+  event.stopPropagation()
+  const rect = (event.currentTarget as HTMLElement).getBoundingClientRect()
+  emit('menu', {
+    workspace,
+    x: event.clientX || rect.left + rect.width / 2,
+    y: event.clientY || rect.top + rect.height / 2
+  })
+}
+
+function onKeydown(event: KeyboardEvent, workspace: Workspace) {
+  if (event.key !== 'ContextMenu' && !(event.shiftKey && event.key === 'F10')) return
+  event.preventDefault()
+  const rect = (event.currentTarget as HTMLElement).getBoundingClientRect()
+  emit('menu', { workspace, x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 })
+}
 </script>
 
 <template>
@@ -28,6 +47,8 @@ watch(() => props.workspaces, value => { localWorkspaces.value = [...value] }, {
         type="button"
         :class="{ active: workspace.id === activeId }"
         @click="emit('select', workspace.id)"
+        @contextmenu="showMenu($event, workspace)"
+        @keydown="onKeydown($event, workspace)"
       >
         <span />{{ workspace.name }}
       </button>

@@ -10,6 +10,7 @@ const props = defineProps<{
 const canvas = ref<HTMLCanvasElement | null>(null)
 let worker: Worker | null = null
 let observer: ResizeObserver | null = null
+let motionPreference: MediaQueryList | null = null
 
 const backgroundStyle = computed(() => props.wallpaper?.imagePath
   ? { backgroundImage: `url("${props.wallpaper.imagePath}")` }
@@ -24,9 +25,25 @@ function sendSize() {
   })
 }
 
-onMounted(() => {
-  if (!props.shaderEnabled || matchMedia('(prefers-reduced-motion: reduce)').matches || !canvas.value) return
+function stopShader() {
+  observer?.disconnect()
+  observer = null
+  worker?.terminate()
+  worker = null
+  window.removeEventListener('pointermove', onPointerMove)
+  document.removeEventListener('visibilitychange', onVisibility)
+}
+
+async function syncShader() {
+  if (!props.shaderEnabled || motionPreference?.matches) {
+    stopShader()
+    return
+  }
+
+  await nextTick()
+  if (!props.shaderEnabled || motionPreference?.matches || !canvas.value || worker) return
   if (!('transferControlToOffscreen' in canvas.value)) return
+
   worker = new Worker(new URL('../workers/mist.worker.ts', import.meta.url), { type: 'module' })
   const offscreen = canvas.value.transferControlToOffscreen()
   worker.postMessage({ type: 'init', canvas: offscreen }, [offscreen])
@@ -36,9 +53,20 @@ onMounted(() => {
   observer.observe(document.documentElement)
   window.addEventListener('pointermove', onPointerMove, { passive: true })
   document.addEventListener('visibilitychange', onVisibility)
+}
+
+function onMotionPreferenceChange() {
+  void syncShader()
+}
+
+onMounted(() => {
+  motionPreference = matchMedia('(prefers-reduced-motion: reduce)')
+  motionPreference.addEventListener('change', onMotionPreferenceChange)
+  void syncShader()
 })
 
 watch(() => props.shaderIntensity, value => worker?.postMessage({ type: 'intensity', value }))
+watch(() => props.shaderEnabled, () => { void syncShader() }, { flush: 'post' })
 
 function onPointerMove(event: PointerEvent) {
   worker?.postMessage({ type: 'pointer', x: event.clientX / innerWidth, y: 1 - event.clientY / innerHeight })
@@ -49,10 +77,8 @@ function onVisibility() {
 }
 
 onBeforeUnmount(() => {
-  observer?.disconnect()
-  worker?.terminate()
-  window.removeEventListener('pointermove', onPointerMove)
-  document.removeEventListener('visibilitychange', onVisibility)
+  motionPreference?.removeEventListener('change', onMotionPreferenceChange)
+  stopShader()
 })
 </script>
 

@@ -27,9 +27,9 @@ logs
 !.env.example
 
 # Runtime data
-data
-uploads
-backups
+/data/
+/uploads/
+/backups/
 
 # Extension outputs
 extension/.output
