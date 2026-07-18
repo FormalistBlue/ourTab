@@ -1,0 +1,7 @@
+:root { color-scheme: dark; background: #17231f; }
+* { box-sizing: border-box; }
+html, body { display: grid; min-width: 320px; min-height: 100%; margin: 0; place-items: center; }
+body { color: #e9efe8; background: radial-gradient(circle at 70% 25%, #886b43, transparent 30%), linear-gradient(145deg, #101b1a, #294c42); font-family: Georgia, serif; }
+main { display: grid; place-items: center; gap: 14px; opacity: .82; }
+.mark { display: grid; width: 46px; height: 46px; place-items: center; border: 1px solid #ddbd7a; border-radius: 15px; color: #e5c77f; font-size: 20px; }
+p { margin: 0; font-size: 13px; }

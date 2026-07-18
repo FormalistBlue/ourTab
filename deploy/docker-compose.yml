@@ -1,0 +1,28 @@
+services:
+  ourtab:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    image: ourtab:local
+    container_name: ourtab
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 3000
+      NUXT_DATABASE_PATH: /app/data/ourtab.db
+      NUXT_UPLOADS_DIR: /app/uploads
+    ports:
+      - "127.0.0.1:3003:3000"
+    volumes:
+      - ./data:/app/data
+      - ./uploads:/app/uploads
+      - ./backups:/app/backups
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 30s

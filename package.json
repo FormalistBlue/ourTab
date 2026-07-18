@@ -1,0 +1,68 @@
+{
+  "name": "ourtab",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "packageManager": "pnpm@10.33.2",
+  "engines": {
+    "node": ">=24.11.0 <25",
+    "pnpm": ">=10.33.0 <11"
+  },
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx scripts/migrate.ts",
+    "db:backup": "node scripts/backup.mjs",
+    "extension:build": "pnpm --dir extension build",
+    "extension:zip": "pnpm --dir extension zip",
+    "lint": "eslint app server shared scripts types tests *.ts",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "typecheck": "nuxt typecheck"
+  },
+  "dependencies": {
+    "@fontsource-variable/sora": "^5.2.8",
+    "@lucide/vue": "1.25.0",
+    "@pinia/nuxt": "1.0.1",
+    "better-sqlite3": "12.11.1",
+    "cheerio": "^1.2.0",
+    "drizzle-orm": "0.45.2",
+    "idb-keyval": "^6.3.0",
+    "nuxt": "^4.4.8",
+    "nuxt-auth-utils": "0.5.29",
+    "pinia": "4.0.2",
+    "sharp": "0.35.3",
+    "vue": "^3.5.39",
+    "vue-draggable-plus": "0.6.1",
+    "vue-router": "^5.1.0",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@nuxt/eslint": "^1.16.0",
+    "@nuxt/test-utils": "^4.0.3",
+    "@playwright/test": "1.61.1",
+    "@types/better-sqlite3": "^7.6.13",
+    "@vitest/coverage-v8": "^4.1.10",
+    "@vue/test-utils": "^2.4.11",
+    "drizzle-kit": "0.31.10",
+    "eslint": "^10.7.0",
+    "happy-dom": "^20.10.6",
+    "tsx": "^4.23.1",
+    "typescript": "5.8.3",
+    "vitest": "4.1.10",
+    "vue-tsc": "3.0.6"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@parcel/watcher",
+      "better-sqlite3",
+      "esbuild",
+      "sharp",
+      "unrs-resolver"
+    ]
+  }
+}
