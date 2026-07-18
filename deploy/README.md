@@ -10,8 +10,8 @@ sed -i "s#replace-with-at-least-32-random-characters#$(openssl rand -base64 36 |
 sed -i "s#replace-with-a-long-random-token#$(openssl rand -base64 36 | tr -d '=+/')#" .env
 mkdir -p data uploads backups
 sudo chown -R 1000:1000 data uploads backups
-docker compose -f deploy/docker-compose.yml up -d --build
-docker compose -f deploy/docker-compose.yml ps
+sudo docker compose -f deploy/docker-compose.yml up -d --build
+sudo docker compose -f deploy/docker-compose.yml ps
 ```
 
 Open `https://ourtab.shandawang.cc/setup` once and enter the setup token from
