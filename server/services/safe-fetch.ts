@@ -45,7 +45,7 @@ async function assertPublicUrl(url: URL) {
   }
 }
 
-export async function safeFetch(input: string, options: { maxRedirects?: number; timeoutMs?: number } = {}) {
+export async function safeFetch(input: string, options: { maxRedirects?: number; timeoutMs?: number; allowStatuses?: number[] } = {}) {
   let url = new URL(input)
   const maxRedirects = options.maxRedirects ?? 3
 
@@ -68,7 +68,7 @@ export async function safeFetch(input: string, options: { maxRedirects?: number;
       url = new URL(location, url)
       continue
     }
-    if (!response.ok) {
+    if (!response.ok && !options.allowStatuses?.includes(response.status)) {
       throw createError({ statusCode: 422, statusMessage: `目标站点返回 ${response.status}` })
     }
     return { response, finalUrl: url }

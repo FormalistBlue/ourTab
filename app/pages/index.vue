@@ -20,6 +20,8 @@ const localGroups = ref<LinkGroup[]>([])
 const now = ref(new Date())
 const contextMenu = reactive<{ open: boolean; x: number; y: number; target: MenuTarget | null }>({ open: false, x: 0, y: 0, target: null })
 let clockTimer: ReturnType<typeof setInterval> | undefined
+let workspaceWheelTimer: ReturnType<typeof setTimeout> | undefined
+let workspaceWheelLocked = false
 
 const activeWorkspace = computed(() => store.activeWorkspace)
 const activeWallpaper = computed(() => {
@@ -62,6 +64,7 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   if (clockTimer) clearInterval(clockTimer)
+  if (workspaceWheelTimer) clearTimeout(workspaceWheelTimer)
   document.removeEventListener('visibilitychange', refreshOnVisible)
 })
 
@@ -73,6 +76,26 @@ function selectWorkspace(id: string) {
   const change = () => store.selectWorkspace(id)
   if (document.startViewTransition) document.startViewTransition(change)
   else change()
+}
+
+function onWheel(event: WheelEvent) {
+  if (workspaceWheelLocked || !event.deltaY || event.ctrlKey || store.workspaces.length < 2) return
+  const target = event.target as HTMLElement | null
+  if (target?.closest('dialog[open], input, textarea, select, [contenteditable="true"], .context-menu, .workspace-dock, .search-command')) return
+
+  const activeIndex = store.workspaces.findIndex(workspace => workspace.id === store.activeWorkspaceId)
+  const currentIndex = activeIndex >= 0 ? activeIndex : 0
+  const direction = event.deltaY > 0 ? 1 : -1
+  const nextIndex = (currentIndex + direction + store.workspaces.length) % store.workspaces.length
+  const nextWorkspace = store.workspaces[nextIndex]
+  if (!nextWorkspace) return
+
+  workspaceWheelLocked = true
+  selectWorkspace(nextWorkspace.id)
+  workspaceWheelTimer = setTimeout(() => {
+    workspaceWheelLocked = false
+    workspaceWheelTimer = undefined
+  }, 600)
 }
 
 async function addWorkspace() {
@@ -198,7 +221,7 @@ function onSettingsAdd(groupId: string) {
 </script>
 
 <template>
-  <main class="app-shell" @contextmenu="showBackgroundMenu">
+  <main class="app-shell" @contextmenu="showBackgroundMenu" @wheel="onWheel">
     <AppBackground
       :wallpaper="activeWallpaper"
       :shader-enabled="Boolean(store.snapshot?.preferences.shaderEnabled)"

@@ -32,7 +32,9 @@
 
 @layer base {
   :root { color-scheme: dark; background: var(--mist-950); }
-  body { min-width: 320px; color: var(--mist-100); background: var(--mist-950); font-family: var(--font-body); font-size: 14px; line-height: 1.5; text-rendering: optimizeLegibility; }
+  body { min-width: 320px; color: var(--mist-100); background: var(--mist-950); font-family: var(--font-body); font-size: 14px; line-height: 1.5; text-rendering: optimizeLegibility; user-select: none; }
+  input, textarea, select, [contenteditable='true'] { user-select: text; }
+  button, a, [role='button'], .link-tile, .workspace-dock, .context-menu { user-select: none; }
   body:has(dialog[open]) { overflow: hidden; }
   a { color: inherit; }
   ::selection { color: var(--mist-950); background: var(--gold-300); }
@@ -206,10 +208,27 @@
   .context-menu-enter-active, .context-menu-leave-active { transition: opacity .16s ease, transform .18s var(--ease-silk); }
   .context-menu-enter-from, .context-menu-leave-to { opacity: 0; transform: translateY(-4px) scale(.96); }
 
-  .settings-dialog { width: min(100% - 20px, 570px); height: min(100svh - 20px, 820px); margin: 10px 10px 10px auto; border-radius: 24px; }
-  .settings-panel { display: flex; flex-direction: column; height: 100%; }
-  .settings-panel__body { overflow: auto; padding: 4px 25px 30px; }
+  .settings-dialog { width: min(calc(100% - 32px), 920px); height: min(calc(100svh - 32px), 680px); margin: auto; border-radius: 26px; }
+  .settings-panel { display: grid; grid-template-columns: 218px minmax(0, 1fr); height: 100%; overflow: hidden; }
+  .settings-panel__nav { display: flex; flex-direction: column; min-width: 0; padding: 22px 13px 17px; border-right: 1px solid oklch(100% 0 0 / .1); background: linear-gradient(180deg, oklch(100% 0 0 / .045), transparent 65%); }
+  .settings-nav__brand { display: flex; align-items: center; gap: 10px; padding: 2px 10px 25px; }
+  .settings-nav__brand > div { display: flex; flex-direction: column; gap: 3px; }
+  .settings-nav__brand strong { font-family: var(--font-display); font-size: 15px; font-weight: 500; }
+  .settings-nav__list { display: flex; flex-direction: column; gap: 4px; }
+  .settings-nav__item { display: flex; align-items: center; gap: 11px; width: 100%; min-height: 56px; padding: 0 11px; border: 1px solid transparent; border-radius: 13px; color: color-mix(in oklab, var(--mist-100) 55%, transparent); background: transparent; text-align: left; transition: color .2s ease, border-color .2s ease, background .2s ease, transform .2s ease; }
+  .settings-nav__item:hover { color: var(--mist-100); background: oklch(100% 0 0 / .06); transform: translateX(2px); }
+  .settings-nav__item.active { border-color: color-mix(in oklab, var(--gold-300) 30%, transparent); color: var(--mist-100); background: linear-gradient(110deg, color-mix(in oklab, var(--gold-300) 14%, transparent), oklch(100% 0 0 / .04)); box-shadow: inset 3px 0 0 var(--gold-300); }
+  .settings-nav__item > svg { flex: 0 0 auto; color: color-mix(in oklab, var(--mist-100) 45%, transparent); }
+  .settings-nav__item.active > svg { color: var(--gold-300); }
+  .settings-nav__item > span { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .settings-nav__item strong { font-size: 12px; font-weight: 500; }
+  .settings-nav__item small { overflow: hidden; color: color-mix(in oklab, var(--mist-100) 38%, transparent); font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+  .settings-nav__version { margin-top: auto; padding: 13px 10px 0; color: color-mix(in oklab, var(--mist-100) 32%, transparent); font-size: 10px; }
+  .settings-panel__content { display: flex; min-width: 0; flex-direction: column; min-height: 0; }
+  .settings-panel__body { flex: 1; overflow: auto; padding: 4px 30px 30px; }
+  .settings-panel__subtitle { margin: 8px 0 0; color: color-mix(in oklab, var(--mist-100) 43%, transparent); font-size: 11px; }
   .settings-section { padding: 22px 0; border-bottom: 1px solid oklch(100% 0 0 / .09); scroll-margin-top: 8px; }
+  .settings-section--first { padding-top: 25px; }
   .settings-section:last-child { border-bottom: 0; }
   .settings-section__heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
   .settings-section h3 { margin: 4px 0 0; font-size: 14px; font-weight: 500; }
@@ -234,16 +253,26 @@
   .setting-toggle i::after { position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: var(--mist-100); content: ''; transition: transform .2s var(--ease-silk), background .2s ease; }
   .setting-toggle input:checked + i { background: color-mix(in oklab, var(--gold-300) 70%, var(--mist-700)); }
   .setting-toggle input:checked + i::after { background: var(--mist-950); transform: translateX(16px); }
-  .wallpaper-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; }
-  .wallpaper-card { overflow: hidden; padding: 0 0 8px; border: 1px solid transparent; border-radius: 11px; color: color-mix(in oklab, var(--mist-100) 68%, transparent); background: oklch(100% 0 0 / .05); text-align: left; transition: border-color .2s ease, transform .2s ease; }
-  .wallpaper-card:hover, .wallpaper-card.active { border-color: color-mix(in oklab, var(--gold-300) 70%, transparent); transform: translateY(-2px); }
-  .wallpaper-card strong { display: block; overflow: hidden; padding: 7px 8px 0; font-size: 10px; font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
+  .settings-section__intro { display: flex; align-items: center; justify-content: space-between; gap: 15px; margin-bottom: 16px; }
+  .settings-section__intro > div { display: flex; flex-direction: column; gap: 4px; }
+  .settings-section__intro strong { font-size: 13px; font-weight: 500; }
+  .settings-section__intro small { color: color-mix(in oklab, var(--mist-100) 43%, transparent); font-size: 10px; }
+  .wallpaper-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 11px; }
+  .wallpaper-card { position: relative; overflow: hidden; border: 1px solid transparent; border-radius: 12px; color: color-mix(in oklab, var(--mist-100) 68%, transparent); background: oklch(100% 0 0 / .05); text-align: left; transition: border-color .2s ease, transform .2s ease, background .2s ease; }
+  .wallpaper-card:hover, .wallpaper-card.active { border-color: color-mix(in oklab, var(--gold-300) 70%, transparent); background: oklch(100% 0 0 / .08); transform: translateY(-2px); }
+  .wallpaper-card__select { display: block; width: 100%; padding: 0 0 9px; border: 0; color: inherit; background: transparent; text-align: left; }
+  .wallpaper-card__select strong { display: block; overflow: hidden; padding: 8px 9px 0; font-size: 10px; font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
+  .wallpaper-card__delete { position: absolute; top: 7px; right: 7px; display: grid; width: 27px; height: 27px; place-items: center; border: 1px solid oklch(100% 0 0 / .18); border-radius: 8px; color: var(--danger); background: oklch(9% .03 165 / .7); opacity: 0; transition: opacity .2s ease, background .2s ease, transform .2s ease; }
+  .wallpaper-card:hover .wallpaper-card__delete, .wallpaper-card__delete:focus-visible { opacity: 1; }
+  .wallpaper-card__delete:hover { background: color-mix(in oklab, var(--danger) 18%, var(--mist-950)); transform: scale(1.05); }
   .wallpaper-card__image { display: block; height: 66px; background-position: center; background-size: cover; }
   .wallpaper-card__image--mist { background-image: radial-gradient(ellipse at 65% 24%, oklch(79% .12 82 / .6), transparent 22%), linear-gradient(145deg, #16302d, #4e7967 52%, #a66e45); }
   .wallpaper-card__image--shader { background-image: radial-gradient(circle at 70% 30%, #c29755, transparent 30%), linear-gradient(135deg, #173a3a, #7f9672); }
   .password-form { display: flex; flex-direction: column; gap: 8px; }
   .password-form input { min-height: 37px; font-size: 11px; }
   .password-form small { color: color-mix(in oklab, var(--mist-100) 55%, transparent); font-size: 10px; }
+  .account-note { display: flex; align-items: flex-start; gap: 9px; margin-top: 22px; padding: 12px; border: 1px solid oklch(100% 0 0 / .09); border-radius: 11px; color: color-mix(in oklab, var(--mist-100) 47%, transparent); background: oklch(100% 0 0 / .035); font-size: 11px; }
+  .account-note svg { flex: 0 0 auto; color: var(--gold-300); }
   .settings-panel__footer { display: flex; align-items: center; justify-content: space-between; margin-top: auto; padding: 15px 25px; border-top: 1px solid oklch(100% 0 0 / .1); color: color-mix(in oklab, var(--mist-100) 36%, transparent); font-size: 10px; }
   .logout-button { display: inline-flex; align-items: center; gap: 7px; padding: 5px 0; border: 0; color: color-mix(in oklab, var(--danger) 84%, transparent); background: transparent; font-size: 11px; }
 
@@ -304,12 +333,25 @@
     .workspace-dock { bottom: 14px; max-width: calc(100% - 20px); }
     .workspace-dock__list { max-width: calc(100vw - 77px); overflow-x: auto; }
     .workspace-dock__list button { padding: 0 10px; }
-    .settings-dialog { width: calc(100% - 12px); height: calc(100svh - 12px); margin: 6px; border-radius: 20px; }
+    .settings-dialog { width: calc(100% - 12px); height: calc(100svh - 12px); margin: auto; border-radius: 20px; }
+    .settings-panel { display: flex; flex-direction: column; }
+    .settings-panel__nav { flex: 0 0 auto; padding: 13px 12px 9px; border-right: 0; border-bottom: 1px solid oklch(100% 0 0 / .1); }
+    .settings-nav__brand { padding: 0 5px 11px; }
+    .settings-nav__list { flex-direction: row; gap: 5px; overflow-x: auto; padding-bottom: 2px; }
+    .settings-nav__item { min-width: 112px; min-height: 48px; padding: 0 9px; }
+    .settings-nav__item:hover { transform: none; }
+    .settings-nav__version { display: none; }
+    .settings-panel__content { min-height: 0; }
+    .settings-panel__subtitle { display: none; }
     .modal-dialog { max-height: calc(100svh - 20px); }
     .modal-card__header, .settings-panel__header { padding: 20px 18px 16px; }
     .modal-card__body, .settings-panel__body { padding-right: 18px; padding-left: 18px; }
     .modal-card__footer, .settings-panel__footer { padding-right: 18px; padding-left: 18px; }
+    .settings-panel__header { padding: 17px 18px 14px; }
     .wallpaper-grid { grid-template-columns: repeat(2, 1fr); }
+    .settings-section__intro { align-items: flex-start; flex-direction: column; }
+    .settings-section__intro .quiet-button { align-self: flex-start; }
+    .wallpaper-card__delete { opacity: 1; }
     .link-icon-editor { flex-wrap: wrap; }
     .link-icon-editor__copy { min-width: 130px; }
     .icon-editor-actions { grid-template-columns: 1fr; }

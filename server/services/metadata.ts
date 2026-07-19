@@ -30,12 +30,22 @@ async function cacheIcon(iconUrl: string) {
   return { iconPath: `/uploads/icons/${id}.webp`, iconColor }
 }
 
+async function fallbackMetadata(normalizedUrl: string, iconBaseUrl = normalizedUrl): Promise<LinkMetadata> {
+  try {
+    const icon = await cacheIcon(new URL('/favicon.ico', iconBaseUrl).toString())
+    return { normalizedUrl, title: new URL(normalizedUrl).hostname, ...icon }
+  } catch {
+    return { normalizedUrl, title: new URL(normalizedUrl).hostname, iconPath: null, iconColor: '#d6a85f' }
+  }
+}
+
 export async function resolveLinkMetadata(input: string): Promise<LinkMetadata> {
   const normalizedUrl = normalizeHttpUrl(input)
-  const { response, finalUrl } = await safeFetch(normalizedUrl)
+  const { response, finalUrl } = await safeFetch(normalizedUrl, { allowStatuses: [401, 403] })
+  if (response.status === 401 || response.status === 403) return fallbackMetadata(normalizedUrl, finalUrl.toString())
   const contentType = response.headers.get('content-type') || ''
   if (!contentType.includes('text/html') && !contentType.includes('application/xhtml+xml')) {
-    return { normalizedUrl, title: new URL(normalizedUrl).hostname, iconPath: null, iconColor: '#d6a85f' }
+    return fallbackMetadata(normalizedUrl, finalUrl.toString())
   }
 
   const html = (await readLimitedBody(response, 1024 * 1024)).toString('utf8')

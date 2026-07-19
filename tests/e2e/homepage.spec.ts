@@ -74,6 +74,7 @@ test('settings apply without a reload and touch has a shortcut action menu', asy
   await enterApp(page)
   await page.getByRole('button', { name: '打开设置' }).click()
 
+  await page.getByRole('tab', { name: /视觉/ }).click()
   const openMode = page.getByLabel('标签默认打开方式')
   await openMode.selectOption('new-tab')
   const shaderToggle = page.locator('.setting-toggle').filter({ hasText: '雾光流域' }).locator('input[type="checkbox"]')
@@ -96,4 +97,42 @@ test('settings apply without a reload and touch has a shortcut action menu', asy
     await page.getByRole('button', { name: `打开 ${title} 操作菜单` }).click()
     await expect(page.getByRole('menuitem', { name: '编辑图标' })).toBeVisible()
   }
+})
+
+test('desktop wheel switches between workspaces', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'chromium-desktop', 'Desktop wheel coverage')
+  await enterApp(page)
+
+  await page.getByRole('button', { name: '打开设置' }).click()
+  const workspaceName = `Wheel ${testInfo.retry}`
+  await page.getByPlaceholder('新工作区名称').fill(workspaceName)
+  await page.getByRole('tabpanel').getByRole('button', { name: '添加工作区' }).click()
+  await expect(page.locator('.workspace-dock__list button')).toHaveCount(2)
+  await page.getByRole('button', { name: '关闭设置' }).click()
+
+  const activeWorkspace = page.locator('.workspace-dock__list button.active')
+  await expect(activeWorkspace).not.toHaveText(workspaceName)
+  await page.locator('.app-shell').dispatchEvent('wheel', { deltaY: 120 })
+  await expect(activeWorkspace).toHaveText(workspaceName)
+
+  await page.waitForTimeout(650)
+  await page.locator('.app-shell').dispatchEvent('wheel', { deltaY: -120 })
+  await expect(activeWorkspace).not.toHaveText(workspaceName)
+})
+
+test('uploaded wallpapers can be deleted from the wallpaper settings', async ({ page }, testInfo) => {
+  await enterApp(page)
+  await page.getByRole('button', { name: '打开设置' }).click()
+  await page.getByRole('tab', { name: /壁纸/ }).click()
+
+  const wallpaperName = `e2e-wallpaper-${testInfo.project.name}`
+  await page.locator('.settings-panel__body input[type="file"]').setInputFiles({ name: `${wallpaperName}.png`, mimeType: 'image/png', buffer: customIcon })
+  const card = page.locator('.wallpaper-card').filter({ hasText: wallpaperName })
+  await expect(card).toBeVisible()
+  await card.getByRole('button', { name: `删除壁纸 ${wallpaperName}` }).click()
+
+  const confirmation = page.locator('.modal-dialog').filter({ hasText: '删除上传壁纸' })
+  await expect(confirmation).toBeVisible()
+  await confirmation.getByRole('button', { name: '删除壁纸' }).click()
+  await expect(card).toHaveCount(0)
 })

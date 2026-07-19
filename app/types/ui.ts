@@ -36,3 +36,5 @@ export interface ConfirmDialogOptions {
 export interface ConfirmDialogApi {
   open: (options: ConfirmDialogOptions) => Promise<boolean>
 }
+
+export type SettingsSection = 'workspace' | 'appearance' | 'wallpaper' | 'account'
