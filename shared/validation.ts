@@ -66,8 +66,13 @@ export const moveLinkSchema = z.object({
 export const preferencesSchema = z.object({
   searchEngine: z.enum(['google', 'bing', 'baidu']).optional(),
   defaultOpenMode: z.enum(['current', 'new-tab']).optional(),
+  theme: z.enum(['mist', 'paper']).optional(),
   globalWallpaperId: idSchema.nullable().optional(),
   shaderEnabled: z.boolean().optional(),
   shaderIntensity: z.number().min(0).max(1).optional(),
-  iconSize: z.number().int().min(48).max(88).optional()
+  iconSize: z.number().int().min(48).max(104).optional(),
+  tileRadius: z.number().int().min(8).max(32).optional(),
+  tileOpacity: z.number().min(0.02).max(0.24).optional(),
+  gridGap: z.number().int().min(6).max(24).optional(),
+  heroOffset: z.number().int().min(12).max(72).optional()
 }).refine(value => Object.keys(value).length > 0, '至少需要修改一个设置')

@@ -1,5 +1,5 @@
 import { asc, count, eq, max } from 'drizzle-orm'
-import type { OpenMode } from '../../shared/contracts'
+import type { OpenMode, ThemeMode } from '../../shared/contracts'
 import { linkGroups, links, preferences, wallpapers, workspaces } from '../database/schema'
 import { getDb, withTransaction } from '../database/client'
 import { bumpRevision } from '../utils/revision'
@@ -216,10 +216,15 @@ export function moveLink(id: string, targetGroupId: string, targetIndex: number)
 export function updatePreferences(userId: string, input: Partial<{
   searchEngine: 'google' | 'bing' | 'baidu'
   defaultOpenMode: OpenMode
+  theme: ThemeMode
   globalWallpaperId: string | null
   shaderEnabled: boolean
   shaderIntensity: number
   iconSize: number
+  tileRadius: number
+  tileOpacity: number
+  gridGap: number
+  heroOffset: number
 }>) {
   return withTransaction(() => {
     const db = getDb()

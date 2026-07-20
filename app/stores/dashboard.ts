@@ -1,6 +1,6 @@
 import { del, get, set } from 'idb-keyval'
 import { defineStore } from 'pinia'
-import type { DashboardSnapshot, LinkGroup, Workspace } from '#shared/contracts'
+import type { AppPreferences, DashboardSnapshot, LinkGroup, Workspace } from '#shared/contracts'
 
 const CACHE_KEY = 'ourtab:dashboard:v1'
 
@@ -90,6 +90,14 @@ export const useDashboardStore = defineStore('dashboard', () => {
     return workspaces.value.flatMap(workspace => workspace.groups).find(group => group.id === id)
   }
 
+  function patchPreferences(value: Partial<AppPreferences>) {
+    if (!snapshot.value) return
+    snapshot.value = {
+      ...snapshot.value,
+      preferences: { ...snapshot.value.preferences, ...value }
+    }
+  }
+
   return {
     snapshot,
     loading,
@@ -102,6 +110,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
     reset,
     refresh,
     mutate,
+    patchPreferences,
     selectWorkspace,
     groupById
   }

@@ -36,18 +36,28 @@ export function getDashboard(userId: string): DashboardSnapshot {
     ? {
         searchEngine: preferenceRow.searchEngine,
         defaultOpenMode: preferenceRow.defaultOpenMode,
+        theme: preferenceRow.theme,
         globalWallpaperId: preferenceRow.globalWallpaperId,
         shaderEnabled: preferenceRow.shaderEnabled,
         shaderIntensity: preferenceRow.shaderIntensity,
-        iconSize: preferenceRow.iconSize
+        iconSize: preferenceRow.iconSize,
+        tileRadius: preferenceRow.tileRadius,
+        tileOpacity: preferenceRow.tileOpacity,
+        gridGap: preferenceRow.gridGap,
+        heroOffset: preferenceRow.heroOffset
       }
     : {
         searchEngine: 'google',
         defaultOpenMode: 'current',
+        theme: 'mist',
         globalWallpaperId: null,
         shaderEnabled: false,
         shaderIntensity: 0.55,
-        iconSize: 64
+        iconSize: 64,
+        tileRadius: 18,
+        tileOpacity: 0.055,
+        gridGap: 11,
+        heroOffset: 24
       }
 
   return {

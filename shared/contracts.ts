@@ -1,5 +1,6 @@
 export type OpenMode = 'current' | 'new-tab'
 export type WallpaperKind = 'builtin' | 'upload' | 'shader'
+export type ThemeMode = 'mist' | 'paper'
 
 export interface LinkItem {
   id: string
@@ -43,10 +44,15 @@ export interface Wallpaper {
 export interface AppPreferences {
   searchEngine: 'google' | 'bing' | 'baidu'
   defaultOpenMode: OpenMode
+  theme: ThemeMode
   globalWallpaperId: string | null
   shaderEnabled: boolean
   shaderIntensity: number
   iconSize: number
+  tileRadius: number
+  tileOpacity: number
+  gridGap: number
+  heroOffset: number
 }
 
 export interface DashboardSnapshot {

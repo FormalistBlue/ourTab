@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { LoaderCircle, Plus, Settings, Sparkles } from '@lucide/vue'
 import { VueDraggable } from 'vue-draggable-plus'
-import type { LinkGroup, LinkItem, Workspace } from '#shared/contracts'
+import type { AppPreferences, LinkGroup, LinkItem, Workspace } from '#shared/contracts'
 import { useDashboardStore } from '../stores/dashboard'
 import type { ConfirmDialogApi, ContextMenuItem, PromptDialogApi } from '../types/ui'
 
@@ -23,7 +23,25 @@ let clockTimer: ReturnType<typeof setInterval> | undefined
 let workspaceWheelTimer: ReturnType<typeof setTimeout> | undefined
 let workspaceWheelLocked = false
 
+const fallbackPreferences: AppPreferences = {
+  searchEngine: 'google',
+  defaultOpenMode: 'current',
+  theme: 'mist',
+  globalWallpaperId: null,
+  shaderEnabled: false,
+  shaderIntensity: 0.55,
+  iconSize: 64,
+  tileRadius: 18,
+  tileOpacity: 0.055,
+  gridGap: 11,
+  heroOffset: 24
+}
+
 const activeWorkspace = computed(() => store.activeWorkspace)
+const activePreferences = computed<AppPreferences>(() => ({
+  ...fallbackPreferences,
+  ...(store.snapshot?.preferences || {})
+}))
 const activeWallpaper = computed(() => {
   const workspaceWallpaper = activeWorkspace.value?.wallpaperId
   const wallpaperId = workspaceWallpaper || store.snapshot?.preferences.globalWallpaperId
@@ -31,6 +49,14 @@ const activeWallpaper = computed(() => {
 })
 const dateLabel = computed(() => new Intl.DateTimeFormat('zh-CN', { weekday: 'long', month: 'long', day: 'numeric' }).format(now.value))
 const timeLabel = computed(() => new Intl.DateTimeFormat('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false }).format(now.value))
+const appearanceStyle = computed<Record<string, string>>(() => ({
+  '--icon-size': `${activePreferences.value.iconSize}px`,
+  '--tile-radius': `${activePreferences.value.tileRadius}px`,
+  '--tile-opacity': `${activePreferences.value.tileOpacity}`,
+  '--grid-gap': `${activePreferences.value.gridGap}px`,
+  '--group-gap': `${Math.max(28, activePreferences.value.gridGap * 3.5)}px`,
+  '--hero-offset': `${activePreferences.value.heroOffset}px`
+}))
 const contextMenuItems = computed<ContextMenuItem[]>(() => {
   if (contextMenu.target?.kind === 'link') {
     return [
@@ -221,7 +247,7 @@ function onSettingsAdd(groupId: string) {
 </script>
 
 <template>
-  <main class="app-shell" @contextmenu="showBackgroundMenu" @wheel="onWheel">
+  <main class="app-shell" :class="{ 'app-shell--paper': activePreferences.theme === 'paper' }" :style="appearanceStyle" @contextmenu="showBackgroundMenu" @wheel="onWheel">
     <AppBackground
       :wallpaper="activeWallpaper"
       :shader-enabled="Boolean(store.snapshot?.preferences.shaderEnabled)"
@@ -239,14 +265,14 @@ function onSettingsAdd(groupId: string) {
 
       <section class="hero-header" aria-labelledby="page-heading">
         <div class="hero-header__time"><span>{{ timeLabel }}</span><small>{{ dateLabel }}</small></div>
-        <SearchCommand v-if="store.snapshot" :workspaces="store.workspaces" :preferences="store.snapshot.preferences" />
+        <SearchCommand v-if="store.snapshot" :workspaces="store.workspaces" :preferences="activePreferences" />
         <p class="hero-header__hint"><Sparkles :size="13" /> 让常用的东西，回到它该在的位置</p>
       </section>
 
       <section v-if="store.loading && !store.snapshot" class="loading-state"><LoaderCircle class="spin" :size="24" /><span>正在整理你的桌面…</span></section>
       <section v-else-if="activeWorkspace" class="workspace-content" aria-live="polite">
         <VueDraggable v-model="localGroups" class="group-stack" item-key="id" handle=".link-group__marker" :animation="240" ghost-class="link-group--ghost" @end="orderGroups(localGroups.map(group => group.id))">
-          <LinkGroupSection v-for="group in localGroups" :key="group.id" :group="group" :icon-size="store.snapshot?.preferences.iconSize || 64" @add="openEditor" @menu="showLinkMenu" @order="orderLinks" @move="moveLink" />
+          <LinkGroupSection v-for="group in localGroups" :key="group.id" :group="group" :icon-size="activePreferences.iconSize" @add="openEditor" @menu="showLinkMenu" @order="orderLinks" @move="moveLink" />
         </VueDraggable>
         <button v-if="!localGroups.length" class="first-group-card" type="button" @click="openFirstAdd"><Plus :size="22" /><span>添加第一个网址</span><small>让你的常用入口从这里开始</small></button>
       </section>
@@ -261,7 +287,7 @@ function onSettingsAdd(groupId: string) {
     <div v-if="store.error" class="toast toast--error" role="status">{{ store.error }}<button type="button" aria-label="关闭提示" @click="store.error = ''">×</button></div>
     <LinkEditorDialog ref="editor" :groups="activeWorkspace?.groups || []" :default-open-mode="store.snapshot?.preferences.defaultOpenMode || 'current'" @saved="store.refresh({ quiet: true })" />
     <IconEditorDialog ref="iconEditor" @saved="store.refresh({ quiet: true })" />
-    <SettingsPanel ref="settings" :active-workspace="activeWorkspace" :preferences="store.snapshot?.preferences || { searchEngine: 'google', defaultOpenMode: 'current', globalWallpaperId: null, shaderEnabled: false, shaderIntensity: .55, iconSize: 64 }" :wallpapers="store.snapshot?.wallpapers || []" @add-link="onSettingsAdd" />
+    <SettingsPanel ref="settings" :active-workspace="activeWorkspace" :preferences="activePreferences" :wallpapers="store.snapshot?.wallpapers || []" @add-link="onSettingsAdd" />
     <AppContextMenu :open="contextMenu.open" :x="contextMenu.x" :y="contextMenu.y" :items="contextMenuItems" @close="closeContextMenu" @select="handleContextAction" />
     <AppPromptDialog ref="promptDialog" />
     <AppConfirmDialog ref="confirmDialog" />

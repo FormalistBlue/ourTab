@@ -85,10 +85,15 @@ export default defineEventHandler(async (event) => {
       userId,
       searchEngine: 'google',
       defaultOpenMode: 'current',
+      theme: 'mist',
       globalWallpaperId: builtinWallpaperId,
       shaderEnabled: false,
       shaderIntensity: 0.55,
       iconSize: 64,
+      tileRadius: 18,
+      tileOpacity: 0.055,
+      gridGap: 11,
+      heroOffset: 24,
       updatedAt: timestamp
     }).run()
     tx.insert(appState).values({ id: 1, revision: 1, updatedAt: timestamp })

@@ -54,10 +54,15 @@ export const preferences = sqliteTable('preferences', {
   userId: text('user_id').primaryKey().references(() => users.id, { onDelete: 'cascade' }),
   searchEngine: text('search_engine', { enum: ['google', 'bing', 'baidu'] }).notNull().default('google'),
   defaultOpenMode: text('default_open_mode', { enum: ['current', 'new-tab'] }).notNull().default('current'),
+  theme: text('theme', { enum: ['mist', 'paper'] }).notNull().default('mist'),
   globalWallpaperId: text('global_wallpaper_id').references(() => wallpapers.id, { onDelete: 'set null' }),
   shaderEnabled: integer('shader_enabled', { mode: 'boolean' }).notNull().default(false),
   shaderIntensity: real('shader_intensity').notNull().default(0.55),
   iconSize: integer('icon_size').notNull().default(64),
+  tileRadius: integer('tile_radius').notNull().default(18),
+  tileOpacity: real('tile_opacity').notNull().default(0.055),
+  gridGap: integer('grid_gap').notNull().default(11),
+  heroOffset: integer('hero_offset').notNull().default(24),
   updatedAt: text('updated_at').notNull()
 })
 

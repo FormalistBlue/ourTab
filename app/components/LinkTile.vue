@@ -61,8 +61,10 @@ function onKeydown(event: KeyboardEvent) {
       title="拖动排序"
       :style="{ '--icon-size': `${iconSize}px`, '--icon-color': link.iconColor }"
     >
-      <img v-if="iconUrl" :src="iconUrl" alt="" loading="lazy">
-      <span v-else>{{ initial }}</span>
+      <span class="link-icon__content">
+        <img v-if="iconUrl" :src="iconUrl" alt="" loading="lazy">
+        <span v-else class="link-icon__initial">{{ initial }}</span>
+      </span>
     </div>
     <span class="link-tile__label" :title="link.title">{{ link.title }}</span>
   </article>

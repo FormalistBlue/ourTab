@@ -49,7 +49,14 @@ function selectSection(nextSection: SettingsSection) {
 }
 
 async function updatePreference(value: Partial<AppPreferences>) {
-  await store.mutate('/api/preferences', { method: 'PATCH', body: value })
+  const previous = { ...props.preferences }
+  store.patchPreferences(value)
+  try {
+    await store.mutate('/api/preferences', { method: 'PATCH', body: value })
+  } catch (cause) {
+    store.patchPreferences(previous)
+    throw cause
+  }
 }
 
 async function createWorkspace() {
@@ -180,9 +187,14 @@ defineExpose({ open, close })
           </section>
 
           <section v-else-if="section === 'appearance'" class="settings-section settings-section--first">
+            <label class="setting-control"><span>主题风格</span><select :value="preferences.theme" @change="updatePreference({ theme: ($event.target as HTMLSelectElement).value as AppPreferences['theme'] })"><option value="mist">深雾金绿</option><option value="paper">亮色手绘多彩</option></select></label>
             <label class="setting-control"><span>默认搜索引擎</span><select :value="preferences.searchEngine" @change="updatePreference({ searchEngine: ($event.target as HTMLSelectElement).value as AppPreferences['searchEngine'] })"><option value="google">Google</option><option value="bing">Bing</option><option value="baidu">百度</option></select></label>
             <label class="setting-control"><span>标签默认打开方式</span><select :value="preferences.defaultOpenMode" @change="updatePreference({ defaultOpenMode: ($event.target as HTMLSelectElement).value as AppPreferences['defaultOpenMode'] })"><option value="current">当前标签页</option><option value="new-tab">新标签页</option></select></label>
-            <label class="setting-control"><span>标签尺寸 <small>{{ preferences.iconSize }}px</small></span><input type="range" min="48" max="88" step="4" :value="preferences.iconSize" @change="updatePreference({ iconSize: Number(($event.target as HTMLInputElement).value) })"></label>
+            <label class="setting-control"><span>图标尺寸 <small>{{ preferences.iconSize }}px</small></span><input type="range" min="48" max="104" step="4" :value="preferences.iconSize" @change="updatePreference({ iconSize: Number(($event.target as HTMLInputElement).value) })"></label>
+            <label class="setting-control"><span>卡片圆角 <small>{{ preferences.tileRadius }}px</small></span><input type="range" min="8" max="32" step="2" :value="preferences.tileRadius" @change="updatePreference({ tileRadius: Number(($event.target as HTMLInputElement).value) })"></label>
+            <label class="setting-control"><span>卡片透明度 <small>{{ Math.round(preferences.tileOpacity * 100) }}%</small></span><input type="range" min="0.02" max="0.24" step="0.01" :value="preferences.tileOpacity" @change="updatePreference({ tileOpacity: Number(($event.target as HTMLInputElement).value) })"></label>
+            <label class="setting-control"><span>图标间距 <small>{{ preferences.gridGap }}px</small></span><input type="range" min="6" max="24" step="1" :value="preferences.gridGap" @change="updatePreference({ gridGap: Number(($event.target as HTMLInputElement).value) })"></label>
+            <label class="setting-control"><span>顶部留白 <small>{{ preferences.heroOffset }}px</small></span><input type="range" min="12" max="72" step="2" :value="preferences.heroOffset" @change="updatePreference({ heroOffset: Number(($event.target as HTMLInputElement).value) })"></label>
             <label class="setting-toggle"><span><strong>雾光流域</strong><small>启用 WebGL2 动态氛围</small></span><input type="checkbox" :checked="preferences.shaderEnabled" @change="updatePreference({ shaderEnabled: ($event.target as HTMLInputElement).checked })"><i /></label>
             <label v-if="preferences.shaderEnabled" class="setting-control"><span>动态强度 <small>{{ Math.round(preferences.shaderIntensity * 100) }}%</small></span><input type="range" min="0" max="1" step="0.05" :value="preferences.shaderIntensity" @change="updatePreference({ shaderIntensity: Number(($event.target as HTMLInputElement).value) })"></label>
           </section>
